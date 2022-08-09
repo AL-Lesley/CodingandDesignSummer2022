@@ -69,7 +69,7 @@ def rerollCheck(compR):
     l=0
     while(rerollNeed==False and l<numDice):
         l+=1
-        if(compR[i]<5):
+        if(compR[l]<5):
            return True
 
 #Start Game
