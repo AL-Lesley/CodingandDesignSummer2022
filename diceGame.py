@@ -81,8 +81,7 @@ compRoll = roll(numDice)
 #loops for every turn -1st roll
 for i in range(numTurns-1):
     time.sleep(1)
-    print('\nROLL', i+1,'\n')
-    print('Your Roll:', userRoll)
+    print('\nYour Roll:', userRoll)
     #Ask user if they want to change any rolls
     skip=input('Skip turn(y/n)')
     while not(skip.lower()=='y' or skip.lower()=='n'):
