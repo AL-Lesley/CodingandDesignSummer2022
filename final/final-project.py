@@ -68,7 +68,7 @@ def getNum(message,top):
         end=btn3.value()
         lcd.putstr(message)
         lcd.putstr(str(num))
-        utime.sleep(.2)
+        sleep(.2)
         lcd.clear()
         if btn1.value()==0 and num>0:
             num-=1
@@ -76,14 +76,12 @@ def getNum(message,top):
             num+=1
     return num
                 
-#start screen     
+#start screen
+lcd.putstr("Press Button\n")
+lcd.putstr('To Set ')
 while(btn1.value()==1 and btn2.value()==1 and btn3.value()==1):
     btn_status=btn1.value()
-    lcd.clear()
-    lcd.putstr("Press Button\n")
-    lcd.putstr('To Set ')
     utime.sleep(.2)
-    lcd.clear()
 
 def convertDays():
     global day
@@ -96,22 +94,21 @@ def convertHours():
 #convert time left to days, hours, mins for LCD display
 def convertTimeLeft(n):
     txtTimeLeft=[]
-    if n>1440:
-        txtTimeLeft.append(n/1440)
-        n=n%1440
+    if n>=1440:
+        txtTimeLeft.append(n//1440)
+        n= n%1400
     else:
         txtTimeLeft.append(0)
-    if n>60:
-        txtTimeLeft.append(n/60)
+    if n>=60:
+        txtTimeLeft.append(n//60)
         n=n%60
     else:
         txtTimeLeft.append(0)
-    if n>1:
+    if n>=0:
         txtTimeLeft.append(n)
     else:
         txtTimeLeft.append(0)
     return txtTimeLeft
-
 
 #collect useer input
 day = getNum('DAYS\n',100)
@@ -119,21 +116,23 @@ convertDays()
 hour = getNum('HOURS\n',24)
 convertHours()
 mins = getNum('MINUTES\n',60)
+
 cycletime= day+hour+mins
 cycles=1
 rained = False
 
-#amount of time for user to set timer
+#time for user to set timer
 inputT=utime.time()
-    
+
 while True:
     currentT = ((utime.time()-inputT)/60)/cycles
     timeLeft=cycletime-currentT
     print(timeLeft)
-    
+    print(inputT)
     #display time left to user
     tlist=convertTimeLeft(timeLeft)
-    lcd.putstr('DAYS: '+str(tlist[0])+' HOURS: '+str(tlist[1])+'MINS: '+str(round(tlist[2]),3))
+    lcd.putstr('DAYS: '+str(int(tlist[0]))+' HOURS: '\
+               +str(int(tlist[1]))+' MINS: '+str(round(float(tlist[2]),2)))
     #if there has been rain in a cycle set rained bool to true
     if checkRain() == 1:
         rained = True
@@ -145,10 +144,13 @@ while True:
             pump(pump_speed,1,pwmPIN,cwPin,acwPin)
             sleep(pump_time)
             pump(pump_speed,0,pwmPIN,cwPin,acwPin)
+            inputT+=(pump_time*4)
         
         rained=False
 
     utime.sleep(1)
     lcd.clear()
+
+        
 
         
