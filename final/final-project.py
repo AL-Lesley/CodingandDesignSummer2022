@@ -1,6 +1,6 @@
 #App that allows a user to set a plant watering timer that resets if it has rained
 from machine import Pin, ADC, PWM, I2C
-from time import sleep, sleep_ms
+from time import sleep
 from machine_i2c_lcd import I2cLcd
 import utime
 
@@ -54,7 +54,6 @@ pump(pump_speed,0,pwmPIN,cwPin,acwPin)
 #check if there has been rain
 def checkRain():
     if water_sensor_DO.value() == 0:
-        print("It is raining: {}".format(water_sensor_ADC.read_u16()))
         return True
     else:
         return False
@@ -75,14 +74,7 @@ def getNum(message,top):
         if btn2.value()==0 and num<top:
             num+=1
     return num
-                
-#start screen
-lcd.putstr("Press Button\n")
-lcd.putstr('To Set ')
-while(btn1.value()==1 and btn2.value()==1 and btn3.value()==1):
-    btn_status=btn1.value()
-    utime.sleep(.2)
-
+    
 def convertDays():
     global day
     day = day*24*60
@@ -110,6 +102,13 @@ def convertTimeLeft(n):
         txtTimeLeft.append(0)
     return txtTimeLeft
 
+#start screen
+lcd.putstr("Press Button\n")
+lcd.putstr('To Set ')
+while(btn1.value()==1 and btn2.value()==1 and btn3.value()==1):
+    btn_status=btn1.value()
+    utime.sleep(.2)
+
 #collect useer input
 day = getNum('DAYS\n',100)
 convertDays()
@@ -117,40 +116,31 @@ hour = getNum('HOURS\n',24)
 convertHours()
 mins = getNum('MINUTES\n',60)
 
-cycletime= day+hour+mins
-cycles=1
+cycletime= 0
 rained = False
 
-#time for user to set timer
-inputT=utime.time()
-
 while True:
-    startT=utime.time()-inputT
-    currentT = (startT/60)/cycles
-    timeLeft=cycletime-currentT
-    print(timeLeft)
-    print(cycletime)
-    #display time left to user
-    tlist=convertTimeLeft(timeLeft)
-    lcd.putstr('DAYS: '+str(int(tlist[0]))+' HOURS: '\
-               +str(int(tlist[1]))+' MINS: '+str(round(float(tlist[2]),2)))
-    #if there has been rain in a cycle set rained bool to true
-    if checkRain() == 1:
-        rained = True
-    #if user choosen time has passed and it has not rained turn
-    #on pump for 20 secs 
-    if timeLeft==0:
-        cycles+=1
-        if rained == False:
-            pump(pump_speed,1,pwmPIN,cwPin,acwPin)
-            sleep(pump_time)
-            pump(pump_speed,0,pwmPIN,cwPin,acwPin)
-            cycletime+=(2/3)
-        else:
-            rained=False
-
-    utime.sleep(1)
-    lcd.clear()
+    rained = False
+    cycletime=day+hour+mins
+    while cycletime>0:
+        cycletime-=(1/60)
+        tlist=convertTimeLeft(cycletime)
+        lcd.putstr('DAYS: '+str(int(tlist[0]))+' HOURS: '\
+               +str(int(tlist[1]))+'MINS: '+ str(int(tlist[2]))+' SECS: '+str(int(cycletime*60)))
+        #if there has been rain in a cycle set rained bool to true
+        if checkRain():
+            print('rain')
+            rained = True
+        #if user choosen time has passed and it has not rained turn
+        #on pump for 20 secs
+        if cycletime<.01:
+            if rained == False:
+                pump(pump_speed,1,pwmPIN,cwPin,acwPin)
+                sleep(pump_time)
+                pump(pump_speed,0,pwmPIN,cwPin,acwPin)
+            cycletime=0
+        utime.sleep(1)
+        lcd.clear()
 
         
 
