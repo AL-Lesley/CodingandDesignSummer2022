@@ -125,10 +125,11 @@ rained = False
 inputT=utime.time()
 
 while True:
-    currentT = ((utime.time()-inputT)/60)/cycles
+    startT=utime.time()-inputT
+    currentT = (startT/60)/cycles
     timeLeft=cycletime-currentT
     print(timeLeft)
-    print(inputT)
+    print(cycletime)
     #display time left to user
     tlist=convertTimeLeft(timeLeft)
     lcd.putstr('DAYS: '+str(int(tlist[0]))+' HOURS: '\
@@ -138,15 +139,15 @@ while True:
         rained = True
     #if user choosen time has passed and it has not rained turn
     #on pump for 20 secs 
-    if timeLeft==0 :
+    if timeLeft==0:
         cycles+=1
         if rained == False:
             pump(pump_speed,1,pwmPIN,cwPin,acwPin)
             sleep(pump_time)
             pump(pump_speed,0,pwmPIN,cwPin,acwPin)
-            inputT+=(pump_time*4)
-        
-        rained=False
+            cycletime+=(2/3)
+        else:
+            rained=False
 
     utime.sleep(1)
     lcd.clear()
